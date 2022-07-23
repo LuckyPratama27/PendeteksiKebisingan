@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/logo_splash_knalpot_2_01_1"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/logo_splash_knalpot_2_01_1"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PendeteksiKebisingan">
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SplashScreen"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+         b <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>
