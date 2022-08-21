@@ -5,16 +5,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,17 +21,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.InputStream;
+
 public class MainActivity extends AppCompatActivity {
 
-    private Button bWarn,bHistory, blight;
-    private ImageView bLamp;
-    private SeekBar seekBar;
+    private Button bHistory, bLamp;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
-    private Switch simpleSwitch1, simpleSwitch2,simpleSwitch3;
-    private TextView stats, dbVal, lamptxt;
+    private ImageView img;
+    private TextView stats, dbVal;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference myRef;
-    private boolean switchState1, switchState2, switchState3;
     int flag =0;
 
 
@@ -42,45 +40,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         bHistory = findViewById(R.id.btnHistory);
+        bLamp = findViewById(R.id.btnLampCont);
         stats = findViewById(R.id.status_tv);
         dbVal = findViewById(R.id.db_text);
+        img = findViewById(R.id.NewPict);
 
-        seekBar=(SeekBar)findViewById(R.id.seekBar);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                myRef = database.getReference("light");
-                myRef.setValue(progress);
-                //Toast.makeText(getApplicationContext(), "seekbar progress: " + progress, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // Toast.makeText(getApplicationContext(), "seekbar touch started!", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                //Toast.makeText(getApplicationContext(), "seekbar touch stopped!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        myRef = database.getReference("db");
+        myRef = database.getReference();
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Float Val = snapshot.getValue(Float.class);
+                Float Val = snapshot.child("db").getValue(Float.class);
+                String image = snapshot.child("image").getValue(String.class);
+                new DownloadImageTask(img)
+                        .execute(image);
+
                 Integer dbx = Math.round(Val);
 
                 dbVal.setText(dbx.toString());
-                if(Val >= 80){
+                if (Val >= 80) {
                     stats.setText("Motor Berisik");
-                    //bHistory.setText("DB BESAR");
-                    //bHistory.setBackgroundColor(getResources().getColor(R.color.red));
                 } else {
-                    stats.setText("AMAN");
-                    //bHistory.setText("DB KECIL");
-                    //bHistory.setBackgroundColor(getResources().getColor(R.color.pigeon));
+                    stats.setText("Motor Normal");
                 }
             }
 
@@ -90,39 +70,46 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        bLamp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this, LampControl.class);
+                startActivity(i);
+
+            }
+
+        });
         bHistory.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 Intent i = new Intent(MainActivity.this, HistoryActivity.class);
                 startActivity(i);
             }
         });
+    }
 
-        //ToggleButton toggle = (ToggleButton) findViewById(R.id.btnLamp);
-        //toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            //public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                //if (isChecked) {
-                   //myRef = database.getReference("light");
-                    // The toggle is enabled
-                    //myRef.setValue(1);
-              //  } else {
-                //    // The toggle is disabled
-                 //   myRef = database.getReference("light");
-                   // myRef.setValue(0);
-               // }
-           // }
-        //});
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
 
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
 
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
 
-//        bWarn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                myRef = database.getReference("muffler");
-//                myRef.setValue(1);
-//            }
-//        });
-
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 }

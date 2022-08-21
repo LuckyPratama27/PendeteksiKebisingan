@@ -9,6 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PendeteksiKebisingan">
         <activity
+            android:name=".LampControl"
+            android:exported="false" />
+        <activity
             android:name=".HistoryActivity"
             android:exported="false" />
         <activity
@@ -20,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-         b <activity
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
     </application>
